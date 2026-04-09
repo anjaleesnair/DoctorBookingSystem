@@ -1,0 +1,115 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}Manage Doctors{% endblock %}
+{% block title_display %}Manage Doctors{% endblock %}
+{% block nav_doctors %}active{% endblock %}
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+<style>
+    .active-badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.inactive-badge {
+    background: #fce4ec;
+    color: #c62828;
+}
+</style>
+
+<div class="card">
+    <h3>➕ Add New Doctor</h3>
+    <form method="POST" action="{% url 'superadmin-doctors' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Specialization</label>
+                <input type="text" name="specialization" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" name="start_time" required>
+            </div>
+            <div class="form-group">
+                <label>End Time</label>
+                <input type="time" name="end_time" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Slot Duration (minutes)</label>
+                <input type="number" name="consultation_duration_minutes" value="30" min="10" required>
+            </div>
+            <div class="form-group">
+                <label>Max Consultations/Day</label>
+                <input type="number" name="consultations_per_day" value="10" min="1" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Working Days</label>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;">
+                {% for day in days %}
+                <label style="font-weight:normal; display:flex; align-items:center; gap:5px;">
+                    <input type="checkbox" name="working_days" value="{{ day }}"> {{ day|capfirst }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Create Doctor</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>👨‍⚕️ All Doctors</h3>
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Specialization</th><th>Working Days</th><th>Slots</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for doctor in doctors %}
+            <tr>
+                <td>{{ doctor.name }}</td>
+                <td>{{ doctor.specialization }}</td>
+                <td>{{ doctor.working_days|join:", " }}</td>
+                <td>{{ doctor.start_time }} – {{ doctor.end_time }}</td>
+                <td>
+                    <span class="badge {% if doctor.is_active %}active-badge{% else %}inactive-badge{% endif %}">
+                        {% if doctor.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'superadmin-doctor-edit' doctor.pk %}" class="btn btn-edit">Edit</a>
+                    <form method="POST" action="{% url 'superadmin-doctor-delete' doctor.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-delete" onclick="return confirm('Delete this doctor?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align:center; color:#aaa;">No doctors found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

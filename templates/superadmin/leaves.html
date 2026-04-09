@@ -1,0 +1,75 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}Leave Requests{% endblock %}
+{% block title_display %}Leave Requests{% endblock %}
+{% block nav_leaves %}active{% endblock %}
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="card">
+    <h3>📋 All Leave Requests</h3>
+    <table>
+        <thead>
+            <tr><th>Doctor</th><th>Date</th><th>Reason</th><th>Status</th><th>Rejection Reason</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for leave in leaves %}
+            <tr>
+                <td>{{ leave.doctor.name }}</td>
+                <td>{{ leave.date }}</td>
+                <td>{{ leave.reason }}</td>
+                <td><span class="badge badge-{{ leave.status }}">{{ leave.status|capfirst }}</span></td>
+                <td>{{ leave.rejection_reason|default:"-" }}</td>
+                <td>
+                    {% if leave.status == 'pending' %}
+                    <form method="POST" action="{% url 'superadmin-leave-action' leave.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve">
+                        <button class="btn btn-approve" type="submit">Approve</button>
+                    </form>
+                    <button class="btn btn-reject" onclick="showRejectModal({{ leave.pk }})">Reject</button>
+                    {% else %}
+                    <span style="color:#aaa; font-size:13px;">Processed</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align:center; color:#aaa;">No leave requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal">
+        <h3>❌ Reject Leave Request</h3>
+        <form method="POST" id="rejectForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <div class="form-group">
+                <label>Rejection Reason *</label>
+                <textarea name="rejection_reason" rows="3" required style="width:100%;padding:9px;border:1px solid #ddd;border-radius:6px;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="btn btn-reject" type="submit">Confirm Reject</button>
+                <button type="button" class="btn" style="background:#eee;color:#333;" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showRejectModal(pk) {
+    document.getElementById('rejectForm').action = `/superadmin/leaves/${pk}/action/`;
+    document.getElementById('rejectModal').classList.add('active');
+}
+function closeModal() {
+    document.getElementById('rejectModal').classList.remove('active');
+}
+</script>
+{% endblock %}

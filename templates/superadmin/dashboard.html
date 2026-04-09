@@ -1,0 +1,45 @@
+{% extends 'superadmin/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block title_display %}Dashboard{% endblock %}
+{% block nav_dash %}active{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px;">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:36px;">👨‍⚕️</div>
+        <div style="font-size:28px; font-weight:700; color:#1a237e;">{{ total_doctors }}</div>
+        <div style="color:#888; font-size:14px;">Total Doctors</div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:36px;">📋</div>
+        <div style="font-size:28px; font-weight:700; color:#e65100;">{{ pending_leaves }}</div>
+        <div style="color:#888; font-size:14px;">Pending Leaves</div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:36px;">📅</div>
+        <div style="font-size:28px; font-weight:700; color:#2e7d32;">{{ total_appointments }}</div>
+        <div style="color:#888; font-size:14px;">Total Appointments</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Recent Leave Requests</h3>
+    <table>
+        <thead>
+            <tr><th>Doctor</th><th>Date</th><th>Reason</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for leave in recent_leaves %}
+            <tr>
+                <td>{{ leave.doctor.name }}</td>
+                <td>{{ leave.date }}</td>
+                <td>{{ leave.reason|truncatechars:40 }}</td>
+                <td><span class="badge badge-{{ leave.status }}">{{ leave.status|capfirst }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center; color:#aaa;">No leave requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
